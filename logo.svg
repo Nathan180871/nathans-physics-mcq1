@@ -1,0 +1,100 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Student {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  password     String
+  class        String   @default("XII")
+  school       String   @default("")
+  rollNumber   String   @default("")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  attempts     Attempt[]
+  certificate  Certificate?
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Chapter {
+  id            String     @id @default(cuid())
+  order         Int
+  name          String
+  slug          String     @unique
+  description   String
+  topics        String
+  active        Boolean    @default(true)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  questions     Question[]
+}
+
+model Question {
+  id             String   @id @default(cuid())
+  chapterId      String
+  chapter        Chapter  @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  questionText   String
+  optionA        String
+  optionB        String
+  optionC        String
+  optionD        String
+  correctOption  String
+  explanation    String
+  difficulty     String   @default("Medium")
+  topic          String
+  active         Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Attempt {
+  id             String   @id @default(cuid())
+  studentId      String
+  student        Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  chapterId      String
+  chapterName    String
+  score          Int
+  totalQuestions Int
+  correctCount   Int
+  wrongCount     Int
+  unansweredCount Int
+  percentage     Float
+  passed         Boolean  @default(false)
+  timeTaken      Int      @default(0)
+  answersJson    String   @default("{}")
+  createdAt      DateTime @default(now())
+}
+
+model Certificate {
+  id               String   @id @default(cuid())
+  studentId        String   @unique
+  student          Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  certificateId    String   @unique
+  studentName      String
+  schoolName       String
+  completionDate   DateTime @default(now())
+  issued           Boolean  @default(false)
+  teacherRemarks   String   @default("")
+  createdAt        DateTime @default(now())
+}
+
+model Settings {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String
+  updatedAt       DateTime @updatedAt
+}
